@@ -78,7 +78,8 @@ def test_comment_creation_for_authorized_user(author_client, news):
     url = reverse('news:detail', args=(news.id,))
     response = author_client[0].post(url, {'text': 'Тестовый комментарий'})
     assert response.status_code == HTTPStatus.FOUND
-    assert Comment.objects.filter(news=news, text='Тестовый комментарий').exists()
+    assert Comment.objects.filter(
+        news=news, text='Тестовый комментарий').exists()
 
 
 @pytest.mark.django_db

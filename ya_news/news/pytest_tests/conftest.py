@@ -10,13 +10,12 @@ from django.contrib.auth import get_user_model
 
 from django.urls import reverse
 
-from http import HTTPStatus
-
 
 @pytest.fixture
 def user(db):
     User = get_user_model()
-    return User.objects.create_user(username='testuser', password='testpassword')
+    return User.objects.create_user(
+        username='testuser', password='testpassword')
 
 
 @pytest.fixture

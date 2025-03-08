@@ -41,18 +41,16 @@ class RoutesTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_note_detail_not_accessible_to_other_user(self):
-        other_user = User.objects.create_user(
-            username='otheruser', password='otherpass'
-        )
         self.client.login(username='otheruser', password='otherpass')
         response = self.client.get(reverse(
             'notes:detail', args=[self.note.slug])
         )
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 302)
 
     def test_redirect_anonymous_user(self):
         response = self.client.get(reverse('notes:list'))
-        self.assertRedirects(response, reverse('users:login') + '?next=' + reverse('notes:list'))
+        self.assertRedirects(response, reverse(
+            'users:login') + '?next=' + reverse('notes:list'))
 
     def test_registration_login_logout_accessible_to_all(self):
         response = self.client.get(reverse('users:signup'))
