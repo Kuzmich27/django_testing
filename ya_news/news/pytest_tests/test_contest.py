@@ -8,6 +8,7 @@ from news.forms import CommentForm
 
 
 pytestmark = pytest.mark.django_db
+LEN_NEWS_ON_PAGE = 10
 
 
 def test_home_page_news_count(client):
@@ -16,7 +17,7 @@ def test_home_page_news_count(client):
     url = reverse('news:home')
     response = client.get(url)
     assert response.status_code == HTTPStatus.OK
-    assert len(response.context['news_items']) <= 10
+    assert len(response.context['news_items']) <= LEN_NEWS_ON_PAGE
 
 
 def test_home_page_news_order(client, news):
