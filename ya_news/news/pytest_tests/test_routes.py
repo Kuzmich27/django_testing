@@ -74,8 +74,7 @@ def test_edit_or_delete_strangers_comment(
     news_instance,
     not_author
 ):
-    """Авторизированный пользователь не может редактировать
-    и удалять чужие комментарии."""
+    """Авторизованный не может редактировать и удалять чужие комментарии."""
     comment = Comment.objects.create(
         news=news_instance,
         text='Тестовый комментарий',
@@ -93,8 +92,7 @@ def test_edit_or_delete_strangers_comment(
     ('news:home', 'users:login', 'users:logout', 'users:signup')
 )
 def test_pages_availability_for_anonymous_user(client, name):
-    """Страницы регистрации пользователей,
-    входа в учётную запись и выхода из неё доступны анонимным пользователям."""
+    """Страницы регистрации пользователей, анонимным пользователям."""
     url = reverse(name)
     response = client.get(url)
     assert response.status_code == HTTPStatus.OK
