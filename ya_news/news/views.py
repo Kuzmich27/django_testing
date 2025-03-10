@@ -3,6 +3,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.views import generic
+from django.http import Http404
 
 from .forms import CommentForm
 from .models import Comment, News
@@ -12,6 +13,7 @@ class NewsList(generic.ListView):
     """Список новостей."""
     model = News
     template_name = 'news/home.html'
+    context_object_name = 'news_items'
 
     def get_queryset(self):
         """
@@ -92,6 +94,13 @@ class CommentBase(LoginRequiredMixin):
     def get_queryset(self):
         """Пользователь может работать только со своими комментариями."""
         return self.model.objects.filter(author=self.request.user)
+
+    def get_object(self, queryset=None):
+        """Переопределяем метод get_object для проверки прав доступа."""
+        obj = super().get_object(queryset)
+        if obj.author != self.request.user:
+            raise Http404("Вы не имеете прав для доступа к этому комментарию.")
+        return obj
 
 
 class CommentUpdate(CommentBase, generic.UpdateView):

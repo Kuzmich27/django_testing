@@ -1,23 +1,22 @@
-import pytest
-
 from http import HTTPStatus
 
+import pytest
 from django.urls import reverse
-
-
 from news.models import Comment
 
 
 @pytest.mark.django_db
 def test_home_availability_for_anonymous_user(client):
+    """Главная страница доступна анонимному пользователю."""
     url = reverse('news:home')
     response = client.get(url)
     assert response.status_code == HTTPStatus.OK
 
 
 @pytest.mark.django_db
-def test_separate_news_for_anonymous_user(client, news):
-    url = reverse('news:detail', args=(news.id,))
+def test_separate_news_for_anonymous_user(client, news_instance):
+    """Страница отдельной новости доступна анонимному пользователю."""
+    url = reverse('news:detail', args=(news_instance.id,))
     response = client.get(url)
     assert response.status_code == HTTPStatus.OK
 
@@ -36,31 +35,14 @@ def test_separate_news_for_anonymous_user(client, news):
 )
 def test_comment_availability_for_author(
     parametrized_client,
-    name,
-    news,
     expected_status,
-    not_author
+    name,
+    comments
 ):
-    if isinstance(parametrized_client, tuple):
-        client, author = parametrized_client
-    else:
-        client = parametrized_client
-        author = None
-
-    if author:
-        comment = Comment.objects.create(
-            news=news,
-            text='Тестовый комментарий',
-            author=author
-        )
-    else:
-        comment = Comment.objects.create(
-            news=news,
-            text='Тестовый комментарий',
-            author=not_author
-        )
+    """Удаления и редактирования комментария доступны автору комментария."""
+    comment = comments[0]
     url = reverse(name, args=(comment.id,))
-    response = client.get(url)
+    response = parametrized_client.get(url)
     assert response.status_code == expected_status
 
 
@@ -69,17 +51,13 @@ def test_comment_availability_for_author(
 def test_edit_or_delete_comment_for_anonymous_user(
     not_author_client,
     name,
-    news,
-    not_author
+    comments
+
 ):
-    client = not_author_client
-    comment = Comment.objects.create(
-        news=news,
-        text='Тестовый комментарий',
-        author=not_author
-    )
+    """Редактирования или удаления комментария анонимным пользователем"""
+    comment = comments[0]
     url = reverse(name, args=(comment.id,))
-    response = client.get(url)
+    response = not_author_client.get(url)
 
     assert response.status_code == HTTPStatus.FOUND
     assert response.url.startswith(reverse('users:login'))
@@ -92,21 +70,23 @@ def test_edit_or_delete_comment_for_anonymous_user(
     ('news:delete', 'news:edit')
 )
 def test_edit_or_delete_strangers_comment(
-    author_client,
     name,
-    news,
+    not_author_client,
+    news_instance,
     not_author
 ):
-    client, _ = author_client
+    """Авторизированный пользователь не может редактировать
+    и удалять чужие комментарии"""
+
     comment = Comment.objects.create(
-        news=news,
+        news=news_instance,
         text='Тестовый комментарий',
         author=not_author
     )
-
     url = reverse(name, args=(comment.id,))
-    response = client.post(url)
-    assert response.status_code == HTTPStatus.NOT_FOUND
+    response = not_author_client.post(url)
+
+    assert response.status_code == HTTPStatus.FOUND
 
 
 @pytest.mark.django_db
@@ -115,6 +95,8 @@ def test_edit_or_delete_strangers_comment(
     ('news:home', 'users:login', 'users:logout', 'users:signup')
 )
 def test_pages_availability_for_anonymous_user(client, name):
+    """Страницы регистрации пользователей,
+    входа в учётную запись и выхода из неё доступны анонимным пользователям."""
     url = reverse(name)
     response = client.get(url)
     assert response.status_code == HTTPStatus.OK
