@@ -21,7 +21,6 @@ def anonimous_and_autouser_send_comment(
     comments
 ):
     """Отправление комментариев анонимным и авторизованным пользователем"""
-
     url = reverse(name, agrs=(comments.id,))
     response = parametrized_client.get(url)
     assert response.status_code == expected_status
@@ -46,7 +45,6 @@ def anonimous_and_autouser_edit_delete_comments(
     comments
 ):
     """Редактирование, удаление своих комментариев авторизированным юзером"""
-
     url = reverse(name, agrs=(comments.id,))
     response = parametrized_client.get(url)
     assert response.status_code == expected_status

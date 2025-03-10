@@ -52,9 +52,8 @@ def test_edit_or_delete_comment_for_anonymous_user(
     not_author_client,
     name,
     comments
-
 ):
-    """Редактирования или удаления комментария анонимным пользователем"""
+    """Редактирования или удаления комментария анонимным пользователем."""
     comment = comments[0]
     url = reverse(name, args=(comment.id,))
     response = not_author_client.get(url)
@@ -76,8 +75,7 @@ def test_edit_or_delete_strangers_comment(
     not_author
 ):
     """Авторизированный пользователь не может редактировать
-    и удалять чужие комментарии"""
-
+    и удалять чужие комментарии."""
     comment = Comment.objects.create(
         news=news_instance,
         text='Тестовый комментарий',
