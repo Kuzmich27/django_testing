@@ -54,11 +54,13 @@ def news():
         title__in=[f'Заголовок {i + 1}' for i in range(10)]
     )
 
+
 @pytest.fixture
 @pytest.mark.django_db
 def news_instance():
     """Создает экземпляр новости для тестов."""
     return News.objects.create(title='Заголовок', text='Текст новости')
+
 
 @pytest.fixture
 @pytest.mark.django_db
