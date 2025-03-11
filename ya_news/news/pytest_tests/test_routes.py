@@ -5,7 +5,9 @@ from django.urls import reverse
 from news.models import Comment
 
 
-@pytest.mark.django_db
+pytestmark = pytest.mark.django_db
+
+
 def test_home_availability_for_anonymous_user(client):
     """Главная страница доступна анонимному пользователю."""
     url = reverse('news:home')
@@ -13,7 +15,6 @@ def test_home_availability_for_anonymous_user(client):
     assert response.status_code == HTTPStatus.OK
 
 
-@pytest.mark.django_db
 def test_separate_news_for_anonymous_user(client, news_instance):
     """Страница отдельной новости доступна анонимному пользователю."""
     url = reverse('news:detail', args=(news_instance.id,))
@@ -21,7 +22,6 @@ def test_separate_news_for_anonymous_user(client, news_instance):
     assert response.status_code == HTTPStatus.OK
 
 
-@pytest.mark.django_db
 @pytest.mark.parametrize(
     'parametrized_client, expected_status',
     (
@@ -46,7 +46,6 @@ def test_comment_availability_for_author(
     assert response.status_code == expected_status
 
 
-@pytest.mark.django_db
 @pytest.mark.parametrize('name', ('news:delete', 'news:edit'))
 def test_edit_or_delete_comment_for_anonymous_user(
     not_author_client,
@@ -63,7 +62,6 @@ def test_edit_or_delete_comment_for_anonymous_user(
     assert f'?next={url}' in response.url
 
 
-@pytest.mark.django_db
 @pytest.mark.parametrize(
     'name',
     ('news:delete', 'news:edit')
@@ -86,7 +84,6 @@ def test_edit_or_delete_strangers_comment(
     assert response.status_code == HTTPStatus.FOUND
 
 
-@pytest.mark.django_db
 @pytest.mark.parametrize(
     'name',
     ('news:home', 'users:login', 'users:logout', 'users:signup')

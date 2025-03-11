@@ -3,7 +3,8 @@ from datetime import datetime, timedelta
 import pytest
 from django.contrib.auth import get_user_model
 from django.test.client import Client
-from news.models import News, Comment
+
+from news.models import Comment, News
 
 
 @pytest.fixture
@@ -40,33 +41,33 @@ def not_author_client():
 @pytest.fixture
 @pytest.mark.django_db
 def news():
-    news_items = []
-    for i in range(10):
-        news_date = datetime(2025, 3, 5) - timedelta(days=i)
-        news_item = News.objects.create(title=f'Заголовок {i + 1}',
-                                        date=news_date)
-        news_items.append(news_item)
-    return news_items
-
+    """Создает несколько новостей для тестов."""
+    news_items = [
+        News(
+            title=f'Заголовок {i + 1}',
+            date=datetime(2025, 3, 5) - timedelta(days=i)
+        )
+        for i in range(10)
+    ]
+    News.objects.bulk_create(news_items)
+    return News.objects.filter(
+        title__in=[f'Заголовок {i + 1}' for i in range(10)]
+    )
 
 @pytest.fixture
+@pytest.mark.django_db
 def news_instance():
     """Создает экземпляр новости для тестов."""
     return News.objects.create(title='Заголовок', text='Текст новости')
 
-
 @pytest.fixture
+@pytest.mark.django_db
 def comments(author, news_instance):
     """Создает заданное количество комментариев для новости."""
     num_comments = 3
-    comments_list = []
-
-    for i in range(num_comments):
-        comment = Comment.objects.create(
-            news=news_instance,
-            author=author,
-            text=f'Комментарий {i + 1}'
-        )
-        comments_list.append(comment)
-
-    return comments_list
+    comments_list = [
+        Comment(news=news_instance, author=author, text=f'Комментарий {i + 1}')
+        for i in range(num_comments)
+    ]
+    Comment.objects.bulk_create(comments_list)
+    return Comment.objects.filter(news=news_instance)

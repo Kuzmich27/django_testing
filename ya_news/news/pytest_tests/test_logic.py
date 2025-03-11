@@ -1,12 +1,16 @@
 from http import HTTPStatus
 
 import pytest
+
 from django.urls import reverse
+
 from news.forms import BAD_WORDS
 from news.models import Comment
 
 
-@pytest.mark.django_db
+pytestmark = pytest.mark.django_db
+
+
 @pytest.mark.parametrize(
     'parametrized_client, expected_status',
     (
@@ -26,7 +30,6 @@ def anonimous_and_autouser_send_comment(
     assert response.status_code == expected_status
 
 
-@pytest.mark.django_db
 @pytest.mark.parametrize(
     'parametrized_client, expected_status',
     (
@@ -50,7 +53,6 @@ def anonimous_and_autouser_edit_delete_comments(
     assert response.status_code == expected_status
 
 
-@pytest.mark.django_db
 @pytest.mark.parametrize('bad_word', BAD_WORDS)
 def test_comment_with_forbidden_words(author_client, news_instance, bad_word):
     """Запрещённые слова = не будет опубликовано, а форма вернёт ошибку."""
@@ -66,7 +68,6 @@ def test_comment_with_forbidden_words(author_client, news_instance, bad_word):
     assert response.status_code == HTTPStatus.OK
 
 
-@pytest.mark.django_db
 def test_comment_without_forbidden_words(author_client, news_instance):
     """Авторизированный юзер, редактирование и удаление своих комментариев"""
     valid_comment_text = 'Это допустимый комментарий'
