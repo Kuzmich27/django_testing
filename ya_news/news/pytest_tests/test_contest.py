@@ -13,28 +13,26 @@ LEN_NEWS_ON_PAGE = 10
 TEST_COMMENT_TEXT = 'Тестовый комментарий'
 
 
-def test_home_page_news_count(client):
+def test_home_page_news_count(client, urls):
     """Количество новостей на главной странице — не более 10."""
-    url = reverse('news:home')
-    response = client.get(url)
+    response = client.get(urls['home'])
     assert response.status_code == HTTPStatus.OK
     assert len(response.context['news_items']) <= LEN_NEWS_ON_PAGE
 
 
-def test_home_page_news_order(client, news):
+def test_home_page_news_order(client, news, urls):
     """Новости отсортированы от самой свежей к самой старой."""
-    url = reverse('news:home')
-    response = client.get(url)
+    response = client.get(urls['home'])
     news_list = response.context['news_items']
 
-    for i in range(len(news_list)):
-        assert news_list[i] == news[i]
+    for new in range(len(news_list)):
+        assert news_list[new] == news[new]
 
 
-def test_comments_order_on_news_detail(author_client, news_instance, comments):
+def test_comments_order_on_news_detail(author_client, news_instance,
+                                       comments, urls):
     """Сортировка комментариев в хронологическом порядке."""
-    url = reverse('news:detail', args=(news_instance.id,))
-    response = author_client.get(url)
+    response = author_client.get(urls['detail'](news_instance.id))
 
     assert 'form' in response.context
     comments_list = response.context['comments']
@@ -44,37 +42,36 @@ def test_comments_order_on_news_detail(author_client, news_instance, comments):
         assert comments_list[i] == comment
 
 
-def test_comment_form_availability_for_anonymous_user(client, news):
+def test_comment_form_availability_for_anonymous_user(client, news, urls):
     """Доступность формы для анонимного пользователя."""
     first_news = news[0]
-    url = reverse('news:detail', args=(first_news.id,))
-    response = client.get(url)
+    response = client.get(urls['detail'](first_news.id))
     assert 'comment_form' not in response.context
 
 
 def test_comment_form_availability_for_authorized_user(author_client,
-                                                       news_instance):
+                                                       news_instance, urls):
     """Доступность формы для авторизованного пользователя."""
-    url = reverse('news:detail', args=(news_instance.id,))
-    response = author_client.get(url)
+    response = author_client.get(urls['detail'](news_instance.id))
 
     assert response.status_code == HTTPStatus.OK
     assert 'form' in response.context
     assert isinstance(response.context['form'], CommentForm)
 
 
-def test_comment_creation_for_authorized_user(author_client, news_instance):
+def test_comment_creation_for_authorized_user(author_client,
+                                              news_instance, urls):
     """Создание комментария для авторизованного пользователя."""
-    url = reverse('news:detail', args=(news_instance.id,))
-    response = author_client.post(url, {'text': TEST_COMMENT_TEXT})
+    response = author_client.post(urls['detail'](news_instance.id),
+                                  {'text': TEST_COMMENT_TEXT})
     assert response.status_code == HTTPStatus.FOUND
     assert Comment.objects.filter(
         news=news_instance, text=TEST_COMMENT_TEXT).exists()
 
 
-def test_comment_creation_for_anonymous_user(client, news):
+def test_comment_creation_for_anonymous_user(client, news, urls):
     """Создание комментария для анонимного пользователя."""
     first_news = news[0]
-    url = reverse('news:detail', args=(first_news.id,))
-    response = client.post(url, {'text': TEST_COMMENT_TEXT})
+    response = client.post(urls['detail'](first_news.id),
+                           {'text': TEST_COMMENT_TEXT})
     assert response.status_code == HTTPStatus.FOUND
